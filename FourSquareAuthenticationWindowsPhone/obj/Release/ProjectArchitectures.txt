@@ -1,0 +1,2 @@
+A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\BackgroundTask\BackgroundTask.csproj;neutral
+A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\FourSquareAuthenticationWindowsPhone\OneTapCheckin.csproj;neutral

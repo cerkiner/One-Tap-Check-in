@@ -1,0 +1,2 @@
+A:\Admin\Source\Workspaces\Workspace\FourSquareAuthenticationWindowsPhone\BackgroundTask\BackgroundTask.csproj;neutral
+A:\Admin\Source\Workspaces\Workspace\FourSquareAuthenticationWindowsPhone\FourSquareAuthenticationWindowsPhone\FourSquareAuthenticationWindowsPhone.csproj;neutral
