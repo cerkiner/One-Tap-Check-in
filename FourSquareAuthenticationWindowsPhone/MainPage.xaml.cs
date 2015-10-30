@@ -228,8 +228,8 @@ namespace OneTapCheckin
             String Venue = "";
             Double temp = 401441296.9999999999;
             foreach(Venue _venue in SelectedVenues.venues){
-                double lat1 = pos.Coordinate.Latitude;
-                double long1 = pos.Coordinate.Longitude; 
+                double lat1 = pos.Coordinate.Point.Position.Latitude;
+                double long1 = pos.Coordinate.Point.Position.Longitude; 
                 double lat2 = _venue.location.lat; 
                 double long2 = _venue.location.lng;
                 double R = 6371;
@@ -264,8 +264,6 @@ namespace OneTapCheckin
                 output.SelectAll();
                 MessageBox.Show(response.Content);
             });
-            //RestResponse<RootObject> response2 = client.ExecuteAsync<RootObject>(request);
-            //RestResponse response = client.Execute(request);
         }
 
 
