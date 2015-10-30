@@ -39,3 +39,4 @@ A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\BackgroundTask\obj\Release
 A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\BackgroundTask\obj\Release\OneTapCheckinBackgroundTask.pdb
 A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\BackgroundTask\obj\Release\OneTapCheckinBackgroundTask.winmdobj
 A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\BackgroundTask\obj\Release\OneTapCheckinBackgroundTask.compile.pdb
+A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\BackgroundTask\obj\Release\BackgroundTask.csprojResolveAssemblyReference.cache

@@ -14,6 +14,8 @@ using Newtonsoft.Json;
 using GeofenceUniversalApp;
 using OneTapCheckinBackgroundTask;
 using RestSharp;
+using Windows.Devices.Geolocation;
+using System.Threading.Tasks;
 
 namespace OneTapCheckin
 {
@@ -196,17 +198,56 @@ namespace OneTapCheckin
             output.Text = LocationTask.IsTaskRegistered().ToString();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async Task<Geoposition> getCoordinates()
+        {
+            Geolocator geolocator = new Geolocator();
+            geolocator.DesiredAccuracyInMeters = 5;
+
+            try
+            {
+                return await geolocator.GetGeopositionAsync(maximumAge: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(3));
+            }
+            catch (Exception ex)
+            {
+                //exception
+                return null;
+            }
+        }
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
 
 
             String fsClient = ClientId;
             String fssecret = ClientSecret;
+            Geoposition pos = await getCoordinates();
 
             var client = new RestClient("https://api.foursquare.com/");
-
-
             var request = new RestRequest("v2/checkins/add", Method.POST);
+
+            String Venue = "";
+            Double temp = 401441296.9999999999;
+            foreach(Venue _venue in SelectedVenues.venues){
+                double lat1 = pos.Coordinate.Latitude;
+                double long1 = pos.Coordinate.Longitude; 
+                double lat2 = _venue.location.lat; 
+                double long2 = _venue.location.lng;
+                double R = 6371;
+                double dLat = (lat2 - lat1) * Math.PI / 180;
+                double dLon = (long2 - long1) * Math.PI / 180;
+                lat1 = lat1 * Math.PI / 180;
+                lat2 = lat2 * Math.PI / 180;
+                double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Sin(dLon / 2) * Math.Sin(dLon / 2) * Math.Cos(lat1) * Math.Cos(lat2);
+                double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+                double d = R * c;
+
+                if(d < temp){
+                    temp = d;
+                    Venue = _venue.id.ToString();
+                }
+            }
+
+
 
             client.Authenticator = new HttpBasicAuthenticator(fsClient, ClientSecret);
             request.AddParameter("client_id", fsClient, ParameterType.GetOrPost);
@@ -214,7 +255,7 @@ namespace OneTapCheckin
             request.AddParameter("v", "20140806", ParameterType.GetOrPost);
             request.AddParameter("m", "swarm", ParameterType.GetOrPost);
             request.AddParameter("oauth_token", AccessToken, ParameterType.GetOrPost);
-            request.AddParameter("venueId", SelectedVenues.venues.FirstOrDefault<Venue>().id.ToString(), ParameterType.GetOrPost);
+            request.AddParameter("venueId", Venue, ParameterType.GetOrPost);
             
 
             client.ExecuteAsync(request, response =>
