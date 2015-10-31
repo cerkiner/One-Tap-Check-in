@@ -50,8 +50,8 @@
 
             <Button Name="SelectButton" Content="Add New Venue" HorizontalAlignment="Left" Margin="27,0,0,0" VerticalAlignment="Top" Width="393" Height="84" Click="SelectButton_Click"/>
             <Button Name="DeSelectButon" Content="Edit Selected Venues" HorizontalAlignment="Left" Margin="27,84,0,0" VerticalAlignment="Top" Width="393" Height="84" Click="DeSelectButon_Click"/>
-            <Button Name="RegisterButton" Content="Register Location Task" HorizontalAlignment="Left" Margin="27,168,0,0" VerticalAlignment="Top" Width="393" Height="84" Click="RegisterButton_Click"/>
-            <Button Name="DeRegisterButton" Content="DeRegister Location Task" HorizontalAlignment="Left" Margin="27,252,0,0" VerticalAlignment="Top" Width="393" Height="84" Click="DeRegisterButton_Click"/>
+            <Button Name="RegisterButton" Content="Register Location Task" HorizontalAlignment="Left" Margin="27,168,0,0" VerticalAlignment="Top" Width="393" Height="84" Click="RegisterButton_Click" Visibility="Collapsed"/>
+            <Button Name="DeRegisterButton" Content="DeRegister Location Task" HorizontalAlignment="Left" Margin="27,252,0,0" VerticalAlignment="Top" Width="393" Height="84" Click="DeRegisterButton_Click" Visibility="Collapsed"/>
             <Button Content=" O T C " HorizontalAlignment="Center" Margin="156,525,156,0" VerticalAlignment="Top" Width="152" Click="Button_Click"/>
             <TextBox Name="output" HorizontalAlignment="Left" Height="72" Margin="0,453,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="456"/>
             <!--

@@ -16,6 +16,8 @@ using OneTapCheckinBackgroundTask;
 using RestSharp;
 using Windows.Devices.Geolocation;
 using System.Threading.Tasks;
+using System.IO;
+using System.Text;
 
 namespace OneTapCheckin
 {
@@ -25,6 +27,9 @@ namespace OneTapCheckin
         private string ClientSecret = "NZP1MHSW5W2C1YBXARQRM3GIAMCN2V2254C3DMKLJPQRDYYQ";
         private string AccessToken { get; set; }
         Response SelectedVenues;
+        Response Venues;
+        Geoposition pos = null;
+
         // Constructor
         public MainPage()
         {
@@ -94,44 +99,6 @@ namespace OneTapCheckin
            
         }
 
-        /*
-        private void nearbyPlaces_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (nearbyPlaces.SelectedItem == null)
-                return;
-
-
-            if (IsolatedStorageSettings.ApplicationSettings.Contains("AutoCheckins"))
-            {
-                var SelectedVenue = (Venue)nearbyPlaces.SelectedItem;
-                //Query.Text += "," + SelectedVenue.id; 
-                Response SelectedVenues;
-                try
-                {
-                    IsolatedStorageSettings.ApplicationSettings.TryGetValue<Response>("AutoCheckins", out SelectedVenues);
-                    SelectedVenues.venues.ToList<Venue>();
-                }
-                catch
-                {
-                    SelectedVenues = new Response();
-                    SelectedVenues.venues = new List<Venue>();
-                }
-                SelectedVenues.venues.Remove((Venue)SelectedVenue);
-                IsolatedStorageSettings.ApplicationSettings.Remove("AutoCheckins");
-                IsolatedStorageSettings.ApplicationSettings.Add("AutoCheckins", SelectedVenues);
-                //MessageBox.Show("Err1or");
-                IsolatedStorageSettings.ApplicationSettings.Save();
-                //MessageBox.Show("Erro2r"); 
-                Random random = new Random();
-                NavigationService.Navigate(new Uri("/MainPage.xaml?guid=" + random.Next(0, 9999).ToString(), UriKind.Relative));
-            }
-            else
-            {
-            }
-            nearbyPlaces.SelectedItem = null;
-        }
-        */
-
         protected override void OnBackKeyPress(System.ComponentModel.CancelEventArgs e)
         {
             Application.Current.Terminate();
@@ -198,19 +165,111 @@ namespace OneTapCheckin
             output.Text = LocationTask.IsTaskRegistered().ToString();
         }
 
-        private async Task<Geoposition> getCoordinates()
+        private async Task getCoordinates()
         {
+
             Geolocator geolocator = new Geolocator();
             geolocator.DesiredAccuracyInMeters = 5;
+            geolocator.MovementThreshold = 5;
+            geolocator.ReportInterval = 500;
 
             try
             {
-                return await geolocator.GetGeopositionAsync(maximumAge: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(3));
+                output.Text = "Locating";
+                pos = await geolocator.GetGeopositionAsync(maximumAge: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(5)); // crashes sometimes???? get an idea !!!
             }
             catch (Exception ex)
             {
                 //exception
-                return null;
+                output.Text = "Error Locating";
+                MessageBox.Show("Error");
+            }
+        }
+
+        private async Task getNearbyPlaces()
+        {
+            String fsClient = ClientId;
+            String fssecret = ClientSecret;
+            if (pos == null)
+            {
+                await getCoordinates();
+            }
+            //setCurrentLocation(pos);
+            try
+            {
+                output.Text = "Getting Venues";
+                String datatopost = "?client_id=" + fsClient + "&client_secret=" + fssecret + "&v=20130815&m=swarm&intent=checkin&ll=" + pos.Coordinate.Point.Position.Latitude.ToString().Replace(",", ".") + "," + pos.Coordinate.Point.Position.Longitude.ToString().Replace(",", ".") + "&query=&oauth_token=" + AccessToken;
+                Uri address = new Uri("https://api.foursquare.com/v2/venues/search" + datatopost);
+
+                //Query.Text = address.ToString();
+                // Create the web request
+
+                //MessageBox.Show(address.ToString()); 
+                HttpWebRequest request = WebRequest.Create(address) as HttpWebRequest;
+                // Set type to POST
+                request.Method = "POST";
+                request.ContentType = "application/x-www-form-urlencoded";
+                // Create the data we want to send
+                request.Accept = "application/json";
+                // Get response
+
+                using (HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
+                {
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        //To obtain response body
+                        using (Stream streamResponse = response.GetResponseStream())
+                        {
+                            using (StreamReader streamRead = new StreamReader(streamResponse, Encoding.UTF8))
+                            {
+                                RootObject nearbyVenues = JsonConvert.DeserializeObject<RootObject>(streamRead.ReadToEnd().ToString());
+
+                                foreach (Venue _venue in nearbyVenues.response.venues) // to add offset to nearby places because i wanted to promote whitelist if they are in certain distance.
+                                {
+                                    double lat1 = pos.Coordinate.Point.Position.Latitude;
+                                    double long1 = pos.Coordinate.Point.Position.Longitude;
+                                    double offset = 250; // meter
+                                    double R = 6378137; // earth's something in METERS
+                                    double dLat = offset / R;
+                                    double dLon = offset / (R * Math.Cos(Math.PI * lat1 / 180));
+                                    _venue.location.lat = lat1 + dLat * (180 / Math.PI);
+                                    _venue.location.lng = long1 + dLon * (180 / Math.PI);
+                                }
+
+                                Venues.venues.AddRange(nearbyVenues.response.venues);
+                            }
+                        }
+                    }
+                }
+                /*
+
+                   var client = new RestClient();
+                   client.BaseUrl = new Uri( "https://api.foursquare.com/");
+
+                   var request = new RestRequest();
+                   request.Resource = "v2/venues/search";
+
+                   client.Authenticator = new HttpBasicAuthenticator(fsClient, ClientSecret);
+                   request.AddParameter("client_id", fsClient, ParameterType.UrlSegment);
+                   request.AddParameter("client_secret", fssecret, ParameterType.UrlSegment);
+                   request.AddParameter("ll", pos.Coordinate.Latitude+","+pos.Coordinate.Longitude, ParameterType.UrlSegment);
+                   request.AddParameter("v","20140806" , ParameterType.UrlSegment);
+                   request.AddParameter("m","swarm" , ParameterType.UrlSegment);
+                   request.AddParameter("oauth_token", AccessToken, ParameterType.UrlSegment);
+
+                   var asyncHandle = client.ExecuteAsync<RootObject>(request, response =>
+                   {
+                       nearbyPlaces.ItemsSource = response.Data.response.venues;
+                       //Console.WriteLine(response.Data.Name);
+                   });
+                   //RestResponse<RootObject> response2 = client.ExecuteAsync<RootObject>(request);
+                   //RestResponse response = client.Execute(request);
+                   */
+            }
+            catch (Exception ex)
+            {
+                output.Text = "Error Getting Venues";
+                MessageBox.Show("Error");
             }
         }
 
@@ -220,50 +279,65 @@ namespace OneTapCheckin
 
             String fsClient = ClientId;
             String fssecret = ClientSecret;
-            Geoposition pos = await getCoordinates();
 
             var client = new RestClient("https://api.foursquare.com/");
             var request = new RestRequest("v2/checkins/add", Method.POST);
 
-            String Venue = "";
-            Double temp = 401441296.9999999999;
-            foreach(Venue _venue in SelectedVenues.venues){
-                double lat1 = pos.Coordinate.Point.Position.Latitude;
-                double long1 = pos.Coordinate.Point.Position.Longitude; 
-                double lat2 = _venue.location.lat; 
-                double long2 = _venue.location.lng;
-                double R = 6371;
-                double dLat = (lat2 - lat1) * Math.PI / 180;
-                double dLon = (long2 - long1) * Math.PI / 180;
-                lat1 = lat1 * Math.PI / 180;
-                lat2 = lat2 * Math.PI / 180;
-                double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Sin(dLon / 2) * Math.Sin(dLon / 2) * Math.Cos(lat1) * Math.Cos(lat2);
-                double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-                double d = R * c;
-
-                if(d < temp){
-                    temp = d;
-                    Venue = _venue.id.ToString();
-                }
-            }
-
-
-
-            client.Authenticator = new HttpBasicAuthenticator(fsClient, ClientSecret);
-            request.AddParameter("client_id", fsClient, ParameterType.GetOrPost);
-            request.AddParameter("client_secret", fssecret, ParameterType.GetOrPost);
-            request.AddParameter("v", "20140806", ParameterType.GetOrPost);
-            request.AddParameter("m", "swarm", ParameterType.GetOrPost);
-            request.AddParameter("oauth_token", AccessToken, ParameterType.GetOrPost);
-            request.AddParameter("venueId", Venue, ParameterType.GetOrPost);
+            Venues = SelectedVenues;
             
+            await getNearbyPlaces();
 
-            client.ExecuteAsync(request, response =>
+            try
             {
-                output.Text = response.Content;
-                output.SelectAll();
-                MessageBox.Show(response.Content);
-            });
+
+                output.Text = "Checking In";
+                String Venue = "";
+                Double temp = 401441296.9999999999;
+                foreach (Venue _venue in Venues.venues)
+                {
+                    double lat1 = pos.Coordinate.Point.Position.Latitude;
+                    double long1 = pos.Coordinate.Point.Position.Longitude;
+                    double lat2 = _venue.location.lat;
+                    double long2 = _venue.location.lng;
+                    double R = 6371; // earth's something in kilometers
+                    double dLat = (lat2 - lat1) * Math.PI / 180;
+                    double dLon = (long2 - long1) * Math.PI / 180;
+                    lat1 = lat1 * Math.PI / 180;
+                    lat2 = lat2 * Math.PI / 180;
+                    double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Sin(dLon / 2) * Math.Sin(dLon / 2) * Math.Cos(lat1) * Math.Cos(lat2);
+                    double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+                    double d = R * c;
+
+                    if (d < temp)
+                    {
+                        temp = d;
+                        Venue = _venue.id.ToString(); // trying to get the closest place id among whitelist and offseted nearby places
+                        output.Text = "Checked in to " + _venue.name.ToString();
+                    }
+                }
+
+
+
+                client.Authenticator = new HttpBasicAuthenticator(fsClient, ClientSecret);
+                request.AddParameter("client_id", fsClient, ParameterType.GetOrPost);
+                request.AddParameter("client_secret", fssecret, ParameterType.GetOrPost);
+                request.AddParameter("v", "20140806", ParameterType.GetOrPost);
+                request.AddParameter("m", "swarm", ParameterType.GetOrPost);
+                request.AddParameter("oauth_token", AccessToken, ParameterType.GetOrPost);
+                request.AddParameter("venueId", Venue, ParameterType.GetOrPost);
+
+
+                client.ExecuteAsync(request, response =>
+                {
+                    MessageBox.Show(response.Content);
+                });
+
+            }
+            catch (Exception ex)
+            {
+                output.Text = "Error Checking In";
+                MessageBox.Show("Error");
+            }
         }
 
 
