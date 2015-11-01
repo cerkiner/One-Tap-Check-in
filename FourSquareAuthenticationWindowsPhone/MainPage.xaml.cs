@@ -83,7 +83,7 @@ namespace OneTapCheckin
                 NavigationService.Navigate(new Uri("/FourSquareLoginPage.xaml", UriKind.RelativeOrAbsolute));
             }
 
-            output.Text = LocationTask.IsTaskRegistered().ToString();
+            //output.Text = LocationTask.IsTaskRegistered().ToString();
 
 
         }
@@ -182,7 +182,7 @@ namespace OneTapCheckin
             {
                 //exception
                 output.Text = "Error Locating";
-                MessageBox.Show("Error");
+                MessageBox.Show("Error "+ex);
             }
         }
 
@@ -228,7 +228,7 @@ namespace OneTapCheckin
                                 {
                                     double lat1 = pos.Coordinate.Point.Position.Latitude;
                                     double long1 = pos.Coordinate.Point.Position.Longitude;
-                                    double offset = 250; // meter
+                                    double offset = 25; // meter
                                     double R = 6378137; // earth's something in METERS
                                     double dLat = offset / R;
                                     double dLon = offset / (R * Math.Cos(Math.PI * lat1 / 180));
@@ -269,7 +269,7 @@ namespace OneTapCheckin
             catch (Exception ex)
             {
                 output.Text = "Error Getting Venues";
-                MessageBox.Show("Error");
+                MessageBox.Show("Error " + ex);
             }
         }
 
@@ -280,10 +280,13 @@ namespace OneTapCheckin
             String fsClient = ClientId;
             String fssecret = ClientSecret;
 
+            Venues = new Response();
+            Venues.venues = new List<Venue>();
+
             var client = new RestClient("https://api.foursquare.com/");
             var request = new RestRequest("v2/checkins/add", Method.POST);
 
-            Venues = SelectedVenues;
+            //Venues = SelectedVenues;
             
             await getNearbyPlaces();
 
@@ -293,6 +296,28 @@ namespace OneTapCheckin
                 output.Text = "Checking In";
                 String Venue = "";
                 Double temp = 401441296.9999999999;
+                foreach (Venue _venue in SelectedVenues.venues)
+                {
+                    double lat1 = pos.Coordinate.Point.Position.Latitude;
+                    double long1 = pos.Coordinate.Point.Position.Longitude;
+                    double lat2 = _venue.location.lat;
+                    double long2 = _venue.location.lng;
+                    double R = 6371; // earth's something in kilometers
+                    double dLat = (lat2 - lat1) * Math.PI / 180;
+                    double dLon = (long2 - long1) * Math.PI / 180;
+                    lat1 = lat1 * Math.PI / 180;
+                    lat2 = lat2 * Math.PI / 180;
+                    double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Sin(dLon / 2) * Math.Sin(dLon / 2) * Math.Cos(lat1) * Math.Cos(lat2);
+                    double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+                    double d = R * c;
+
+                    if (d < temp)
+                    {
+                        temp = d;
+                        Venue = _venue.id.ToString(); // trying to get the closest place id among whitelist and offseted nearby places
+                        output.Text = "Checked in to " + _venue.name.ToString();
+                    }
+                }
                 foreach (Venue _venue in Venues.venues)
                 {
                     double lat1 = pos.Coordinate.Point.Position.Latitude;
@@ -336,7 +361,7 @@ namespace OneTapCheckin
             catch (Exception ex)
             {
                 output.Text = "Error Checking In";
-                MessageBox.Show("Error");
+                MessageBox.Show("Error " + ex);
             }
         }
 
