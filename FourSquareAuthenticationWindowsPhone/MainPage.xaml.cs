@@ -224,17 +224,17 @@ namespace OneTapCheckin
                             {
                                 RootObject nearbyVenues = JsonConvert.DeserializeObject<RootObject>(streamRead.ReadToEnd().ToString());
 
-                                foreach (Venue _venue in nearbyVenues.response.venues) // to add offset to nearby places because i wanted to promote whitelist if they are in certain distance.
-                                {
-                                    double lat1 = pos.Coordinate.Point.Position.Latitude;
-                                    double long1 = pos.Coordinate.Point.Position.Longitude;
-                                    double offset = 25; // meter
-                                    double R = 6378137; // earth's something in METERS
-                                    double dLat = offset / R;
-                                    double dLon = offset / (R * Math.Cos(Math.PI * lat1 / 180));
-                                    _venue.location.lat = lat1 + dLat * (180 / Math.PI);
-                                    _venue.location.lng = long1 + dLon * (180 / Math.PI);
-                                }
+                                //foreach (Venue _venue in nearbyVenues.response.venues) // to add offset to nearby places because i wanted to promote whitelist if they are in certain distance.
+                                //{
+                                //    double lat1 = pos.Coordinate.Point.Position.Latitude;
+                                //    double long1 = pos.Coordinate.Point.Position.Longitude;
+                                //    double offset = 25; // meter
+                                //    double R = 6378137; // earth's something in METERS
+                                //    double dLat = offset / R;
+                                //    double dLon = offset / (R * Math.Cos(Math.PI * lat1 / 180));
+                                //    _venue.location.lat = lat1 + dLat * (180 / Math.PI);
+                                //    _venue.location.lng = long1 + dLon * (180 / Math.PI);
+                                //}
 
                                 Venues.venues.AddRange(nearbyVenues.response.venues);
                             }
@@ -280,6 +280,7 @@ namespace OneTapCheckin
             String fsClient = ClientId;
             String fssecret = ClientSecret;
 
+            Venues = null;
             Venues = new Response();
             Venues.venues = new List<Venue>();
 
@@ -288,12 +289,11 @@ namespace OneTapCheckin
 
             //Venues = SelectedVenues;
             
-            await getNearbyPlaces();
 
             try
             {
 
-                output.Text = "Checking In";
+                output.Text = "Checking For Selected Venues";
                 String Venue = "";
                 Double temp = 401441296.9999999999;
                 foreach (Venue _venue in SelectedVenues.venues)
@@ -302,29 +302,7 @@ namespace OneTapCheckin
                     double long1 = pos.Coordinate.Point.Position.Longitude;
                     double lat2 = _venue.location.lat;
                     double long2 = _venue.location.lng;
-                    double R = 6371; // earth's something in kilometers
-                    double dLat = (lat2 - lat1) * Math.PI / 180;
-                    double dLon = (long2 - long1) * Math.PI / 180;
-                    lat1 = lat1 * Math.PI / 180;
-                    lat2 = lat2 * Math.PI / 180;
-                    double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Sin(dLon / 2) * Math.Sin(dLon / 2) * Math.Cos(lat1) * Math.Cos(lat2);
-                    double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-                    double d = R * c;
-
-                    if (d < temp)
-                    {
-                        temp = d;
-                        Venue = _venue.id.ToString(); // trying to get the closest place id among whitelist and offseted nearby places
-                        output.Text = "Checked in to " + _venue.name.ToString();
-                    }
-                }
-                foreach (Venue _venue in Venues.venues)
-                {
-                    double lat1 = pos.Coordinate.Point.Position.Latitude;
-                    double long1 = pos.Coordinate.Point.Position.Longitude;
-                    double lat2 = _venue.location.lat;
-                    double long2 = _venue.location.lng;
-                    double R = 6371; // earth's something in kilometers
+                    double R = 6378137; // earth's something in meters
                     double dLat = (lat2 - lat1) * Math.PI / 180;
                     double dLon = (long2 - long1) * Math.PI / 180;
                     lat1 = lat1 * Math.PI / 180;
@@ -341,6 +319,32 @@ namespace OneTapCheckin
                     }
                 }
 
+                if (temp < 25) { // if none of the selected venues in the range of 25 meters
+                    await getNearbyPlaces();
+                    output.Text = "Checking For Nearby Venues";
+                    foreach (Venue _venue in Venues.venues)
+                    {
+                        double lat1 = pos.Coordinate.Point.Position.Latitude;
+                        double long1 = pos.Coordinate.Point.Position.Longitude;
+                        double lat2 = _venue.location.lat;
+                        double long2 = _venue.location.lng;
+                        double R = 6371; // earth's something in kilometers
+                        double dLat = (lat2 - lat1) * Math.PI / 180;
+                        double dLon = (long2 - long1) * Math.PI / 180;
+                        lat1 = lat1 * Math.PI / 180;
+                        lat2 = lat2 * Math.PI / 180;
+                        double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Sin(dLon / 2) * Math.Sin(dLon / 2) * Math.Cos(lat1) * Math.Cos(lat2);
+                        double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+                        double d = R * c;
+
+                        if (d < temp)
+                        {
+                            temp = d;
+                            Venue = _venue.id.ToString(); // trying to get the closest place id among whitelist and offseted nearby places
+                            output.Text = "Checked in to " + _venue.name.ToString();
+                        }
+                    }
+                }
 
 
                 client.Authenticator = new HttpBasicAuthenticator(fsClient, ClientSecret);
