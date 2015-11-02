@@ -176,7 +176,7 @@ namespace OneTapCheckin
             try
             {
                 output.Text = "Locating";
-                pos = await geolocator.GetGeopositionAsync(maximumAge: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(5)); // crashes sometimes???? get an idea !!!
+                pos = await geolocator.GetGeopositionAsync(maximumAge: TimeSpan.FromMinutes(1), timeout: TimeSpan.FromSeconds(5)); // crashes sometimes???? get an idea !!!
             }
             catch (Exception ex)
             {
@@ -280,15 +280,15 @@ namespace OneTapCheckin
             String fsClient = ClientId;
             String fssecret = ClientSecret;
 
-            Venues = null;
             Venues = new Response();
             Venues.venues = new List<Venue>();
 
             var client = new RestClient("https://api.foursquare.com/");
             var request = new RestRequest("v2/checkins/add", Method.POST);
 
-            //Venues = SelectedVenues;
-            
+
+
+            await getCoordinates();
 
             try
             {
@@ -315,11 +315,12 @@ namespace OneTapCheckin
                     {
                         temp = d;
                         Venue = _venue.id.ToString(); // trying to get the closest place id among whitelist and offseted nearby places
-                        output.Text = "Checked in to " + _venue.name.ToString();
+                        output.Text = "Checked in to " + _venue.name.ToString() + " (" + temp.ToString() + ")";
+                        //MessageBox.Show(_venue.name.ToString() + " (" + temp.ToString() + ")");
                     }
                 }
 
-                if (temp < 25) { // if none of the selected venues in the range of 25 meters
+                if (temp > 25) { // if none of the selected venues in the range of 25 meters
                     await getNearbyPlaces();
                     output.Text = "Checking For Nearby Venues";
                     foreach (Venue _venue in Venues.venues)
@@ -328,7 +329,7 @@ namespace OneTapCheckin
                         double long1 = pos.Coordinate.Point.Position.Longitude;
                         double lat2 = _venue.location.lat;
                         double long2 = _venue.location.lng;
-                        double R = 6371; // earth's something in kilometers
+                        double R = 6378137; // earth's something in kilometers
                         double dLat = (lat2 - lat1) * Math.PI / 180;
                         double dLon = (long2 - long1) * Math.PI / 180;
                         lat1 = lat1 * Math.PI / 180;
@@ -341,7 +342,7 @@ namespace OneTapCheckin
                         {
                             temp = d;
                             Venue = _venue.id.ToString(); // trying to get the closest place id among whitelist and offseted nearby places
-                            output.Text = "Checked in to " + _venue.name.ToString();
+                            output.Text = "Checked in to " + _venue.name.ToString() + " (" + temp.ToString() + ")";
                         }
                     }
                 }
@@ -358,7 +359,8 @@ namespace OneTapCheckin
 
                 client.ExecuteAsync(request, response =>
                 {
-                    MessageBox.Show(response.Content);
+                    Venues.venues.Clear();
+                    //MessageBox.Show(response.Content);
                 });
 
             }

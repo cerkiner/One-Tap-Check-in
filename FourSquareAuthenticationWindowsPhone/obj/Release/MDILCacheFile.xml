@@ -1,6 +1,6 @@
-﻿<xapCache source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\FourSquareAuthenticationWindowsPhone\Bin\Release\OneTapCheckin_Release_AnyCPU.xap" wasSigned="False" wasTritonized="False" certificateThumbprint="" TimeStampUrl="" signKeyFile="" signKeyPassword="" lastWriteTime="1/11/2015 18:40:54">
+﻿<xapCache source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\FourSquareAuthenticationWindowsPhone\Bin\Release\OneTapCheckin_Release_AnyCPU.xap" wasSigned="False" wasTritonized="False" certificateThumbprint="" TimeStampUrl="" signKeyFile="" signKeyPassword="" lastWriteTime="3/11/2015 00:02:07">
   <file source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\FourSquareAuthenticationWindowsPhone\Bin\Release\resources.pri" archivePath="resources.pri" lastWriteTime="30/10/2015 22:14:20" />
-  <file source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\FourSquareAuthenticationWindowsPhone\obj\Release\One Tap Check in.dll" archivePath="One Tap Check in.dll" lastWriteTime="1/11/2015 18:40:53" />
+  <file source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\FourSquareAuthenticationWindowsPhone\obj\Release\One Tap Check in.dll" archivePath="One Tap Check in.dll" lastWriteTime="3/11/2015 00:02:06" />
   <file source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\FourSquareAuthenticationWindowsPhone\Assets\AlignmentGrid.png" archivePath="Assets\AlignmentGrid.png" lastWriteTime="19/3/2013 12:22:48" />
   <file source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\FourSquareAuthenticationWindowsPhone\Assets\BadgeLogo.png" archivePath="Assets\BadgeLogo.png" lastWriteTime="15/2/2015 20:53:44" />
   <file source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\FourSquareAuthenticationWindowsPhone\Assets\Logo.png" archivePath="Assets\Logo.png" lastWriteTime="15/2/2015 20:53:44" />
@@ -22,6 +22,6 @@
   <file source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\packages\Newtonsoft.Json.6.0.8\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.xml" archivePath="Newtonsoft.Json.xml" lastWriteTime="15/2/2015 21:39:50" />
   <file source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\packages\RestSharp.105.0.1\lib\sl4-wp71\RestSharp.WindowsPhone.xml" archivePath="RestSharp.WindowsPhone.xml" lastWriteTime="15/2/2015 21:01:36" />
   <file source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\FourSquareAuthenticationWindowsPhone\Bin\Release\Properties\WMAppManifest.xml" archivePath="WMAppManifest.xml" lastWriteTime="9/10/2015 22:24:16" />
-  <file source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\FourSquareAuthenticationWindowsPhone\obj\Release\MDILProjectFiles.xml" archivePath="MDILProjectFiles.xml" lastWriteTime="1/11/2015 18:40:53" />
+  <file source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\FourSquareAuthenticationWindowsPhone\obj\Release\MDILProjectFiles.xml" archivePath="MDILProjectFiles.xml" lastWriteTime="3/11/2015 00:02:07" />
   <file source="A:\Admin\Source\Workspaces\Workspace\One-Tap-Check-in\FourSquareAuthenticationWindowsPhone\Bin\Release\AppxManifest.xml" archivePath="AppxManifest.xml" lastWriteTime="30/10/2015 22:14:21" />
 </xapCache>
